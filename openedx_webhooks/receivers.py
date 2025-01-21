@@ -133,6 +133,13 @@ def course_discussions_changed_receiver(configuration, **kwargs):
     Handle COURSE_DISCUSSIONS_CHANGED signal.
     """
     _process_event("COURSE_DISCUSSIONS_CHANGED", 'configuration', configuration, **kwargs)
+
+def course_created_receiver(course, **kwargs):
+    """
+    Handle COURSE_CREATED signal.
+    """
+    _process_event("COURSE_CREATED", 'course', course, **kwargs)
+
 #
 #
 # def persistent_grade_summary_receiver(certificate, **kwargs):
