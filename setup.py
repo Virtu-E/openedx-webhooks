@@ -132,6 +132,9 @@ setup(
         "lms.djangoapp": [
             "webhooks = openedx_webhooks.apps:WebhooksConfig",
         ],
+        "cms.djangoapp": [
+            "webhooks = openedx_webhooks.apps:WebhooksConfig",
+        ],
     },
 
 )

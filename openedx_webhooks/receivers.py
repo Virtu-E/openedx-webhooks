@@ -7,11 +7,16 @@ from attrs import asdict
 
 from .models import Webhook
 from .utils import send, serialize_course_key
+from xmodule.modulestore.django import modulestore
+from django.dispatch.dispatcher import receiver
+from xmodule.modulestore.django import SignalHandler
+
+
 
 logger = logging.getLogger(__name__)
 
 
-def _process_event(event_name, data_type, data, **kwargs):
+def _process_event(event_name, data_type, data, metadata=None, **kwargs):
     """
     Process all events with user data.
     """
@@ -22,8 +27,8 @@ def _process_event(event_name, data_type, data, **kwargs):
         logger.info(f"{event_name} webhook triggered to {webhook.webhook_url}")
 
         payload = {
-            data_type: asdict(data, value_serializer=serialize_course_key),
-            'event_metadata': asdict(kwargs.get("metadata")),
+            data_type: data if isinstance(data, dict) else asdict(data, value_serializer=serialize_course_key),
+            'event_metadata': metadata if metadata is not None else asdict(kwargs.get("metadata")),
         }
         logger.warning(payload)
         send(webhook.webhook_url, payload, www_form_urlencoded=False)
@@ -138,10 +143,45 @@ def course_created_receiver(course, **kwargs):
     """
     Handle COURSE_CREATED signal.
     """
-    _process_event("COURSE_CREATED", 'course', course, **kwargs)
+    course_key = course.course_key
+    data = dict()
+    with modulestore().bulk_operations(course_key):
+        course_instance = modulestore().get_course(course_key, depth=0)
+    if course_instance:
+        data['display_name'] = course_instance.display_name
+        data['course_key'] = course_instance.course_id
 
-#
-#
+    _process_event("COURSE_CREATED", 'course', data, **kwargs)
+
+
+
+
+@receiver(SignalHandler.course_published)
+def handle_course_published(sender, course_key, **kwargs):
+    """
+    Catches the signal that a course has been published in the module
+    store and processes it.
+    """
+    # trigger API call on the vault educate side
+    data = dict()
+    metadata = dict ()
+    data['course_key'] = str(course_key)
+    metadata["event_type"] = "course_published"
+
+    _process_event("COURSE_PUBLISHED", 'course', data, metadata=metadata, **kwargs)
+
+
+
+
+
+
+
+
+
+
+
+
+
 # def persistent_grade_summary_receiver(certificate, **kwargs):
 #     """
 #     Handle PERSISTENT_GRADE_SUMMARY_CHANGED signal.

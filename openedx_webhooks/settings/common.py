@@ -71,4 +71,10 @@ def plugin_settings(settings):
                 "openedx_webhooks.filters.DashboardRenderStartedWebFilter"
             ]
         },
+        "org.openedx.xblock.lti_consumer.configuration.listed.v1": {
+            "fail_silently": False,
+            "pipeline": [
+                "lti_store.pipelines.GetLtiConfigurations"
+            ]
+        }
     }

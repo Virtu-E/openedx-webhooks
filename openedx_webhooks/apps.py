@@ -1,5 +1,4 @@
 import logging
-
 from django.apps import AppConfig
 
 learning_signals = [
@@ -16,11 +15,10 @@ learning_signals = [
 ]
 
 content_authoring_signals = [
-    "COURSE_CREATED",
+    "COURSE_CREATED"
 ]
 
 logger = logging.getLogger(__name__)
-
 
 class WebhooksConfig(AppConfig):
     """
@@ -57,13 +55,12 @@ class WebhooksConfig(AppConfig):
             },
             "cms.djangoapp": {
                 "relative_path": "receivers",
-                "receivers":  [
-                                 {
-                                     "receiver_func_name": signal.lower() + "_receiver",
-                                     "signal_path": "openedx_events.content_authoring.signals." + signal,
-                                 } for signal in content_authoring_signals
-                             ],
-
+                "receivers": [
+                    {
+                        "receiver_func_name": signal.lower() + "_receiver",
+                        "signal_path": "openedx_events.content_authoring.signals." + signal,
+                    } for signal in content_authoring_signals
+                ],
             }
         },
     }
