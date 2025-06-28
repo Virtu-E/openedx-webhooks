@@ -2,6 +2,7 @@
 Open edX signal events handler functions.
 """
 import logging
+from datetime import  UTC
 
 from attrs import asdict
 
@@ -10,6 +11,10 @@ from .utils import send, serialize_course_key
 from xmodule.modulestore.django import modulestore
 from django.dispatch.dispatcher import receiver
 from xmodule.modulestore.django import SignalHandler
+
+import uuid
+from datetime import datetime, timezone
+
 
 
 
@@ -150,6 +155,10 @@ def course_created_receiver(course, **kwargs):
     if course_instance:
         data['display_name'] = course_instance.display_name
         data['course_key'] = course_instance.course_id
+        event_id = str(uuid.uuid4())
+        timestamp = datetime.now(UTC).isoformat()
+        data["event_id"] = event_id  # Add the unique event ID
+        data["timestamp"] = timestamp  # Add timestamp
 
     _process_event("COURSE_CREATED", 'course', data, **kwargs)
 
@@ -162,13 +171,24 @@ def handle_course_published(sender, course_key, **kwargs):
     Catches the signal that a course has been published in the module
     store and processes it.
     """
-    # trigger API call on the vault educate side
-    data = dict()
-    metadata = dict ()
-    data['course_key'] = str(course_key)
-    metadata["event_type"] = "course_published"
+    # Check if the sender is MixedModuleStore
+    if str(sender) != "<class 'xmodule.modulestore.mixed.MixedModuleStore'>":
+        logging.info(f"Ignoring signal from sender: {sender}")
+        return
 
-    _process_event("COURSE_PUBLISHED", 'course', data, metadata=metadata, **kwargs)
+    original_metadata = kwargs.get('metadata', {})
+
+    webhook_data = {
+            'event_type': 'course_published',
+            'event_id': original_metadata.get('id', str(uuid.uuid4())),
+            'timestamp': original_metadata.get('time', datetime.now(timezone.utc)).isoformat() if isinstance(
+                original_metadata.get('time'), str) else datetime.now(timezone.utc).isoformat(),
+            'data' :  {            'course_key': str(course_key)
+        }
+    }
+
+
+    _process_event("COURSE_PUBLISHED", 'course', {}, metadata=webhook_data, **kwargs)
 
 
 
