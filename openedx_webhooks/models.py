@@ -51,6 +51,12 @@ class Webhook(TimeStampedModel):
     .. no_pii:
     """
 
+    webhook_secret = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text=_("Secret key for HMAC signature generation (optional)")
+    )
+
     # Create a set of pairs like ("COURSE_ENROLLMENT_CREATED", "Course enrollment created")...
     event_list = (
         (signal,
@@ -97,6 +103,12 @@ class Webfilter(TimeStampedModel):
 
     .. no_pii:
     """
+
+    webhook_secret = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text=_("Secret key for HMAC signature generation (optional)")
+    )
 
     filter_list = [
         (''.join(list(map(str.capitalize, filter.replace('_', '.').split('.')[3:-1]))),

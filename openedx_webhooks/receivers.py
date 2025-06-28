@@ -36,7 +36,7 @@ def _process_event(event_name, data_type, data, metadata=None, **kwargs):
             'event_metadata': metadata if metadata is not None else asdict(kwargs.get("metadata")),
         }
         logger.warning(payload)
-        send(webhook.webhook_url, payload, www_form_urlencoded=False)
+        send(webhook.webhook_url, payload, www_form_urlencoded=False, secret_key=webhook.webhook_secret if webhook.webhook_secret else None)
 
 
 def session_login_completed_receiver(user, **kwargs):

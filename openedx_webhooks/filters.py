@@ -94,7 +94,11 @@ def _process_filter(webfilters, data, exception):
 
         try:
             # Send the request to the webhook URL
-            response = send(webfilter.webhook_url, payload)
+            response = send(
+                webfilter.webhook_url,
+                payload,
+                secret_key=webfilter.webhook_secret if webfilter.webhook_secret else None
+            )
 
         except requests.exceptions.RequestException as e:
             if webfilter.halt_on_request_exception:
