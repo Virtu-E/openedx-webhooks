@@ -35,7 +35,7 @@ def send(url, payload, www_form_urlencoded: bool = False, secret_key: str = None
         headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 
     if signature:
-        headers['X-Hub-Signature-256'] = f'sha256={signature}'
+        headers['X-EdX-Signature'] = f'sha256={signature}'
 
     r = requests.post(url, data=json.dumps(payload, default=str), headers=headers, timeout=10)
 
